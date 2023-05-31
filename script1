@@ -1,0 +1,60 @@
+import gradio as gr
+import openai
+
+# Execute a shell command
+
+ 
+openai.api_key = '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'
+
+# Define questions
+questions = [
+    "What industry does your firm primarily serve?",
+    "Which business areas are you willing to focus more on regarding innovation and technology-related projects?",
+    "What is your yearly approximate budget for innovation and technology-related projects?",
+    "Do you use any program/software for in your business, if you use what is it?",
+    "What is the reason for choosing the currently used program/software?",
+    "Do you think the currently used programs/software support managing your business processes?",
+    "Please mention some of your critical data inputs regarding your business (customer data, payment data, supplier data, sales data etc.)",
+    "What is the frequency of the outsourced support you get for improvements regarding current program/software?",
+    "How many people work in your team regarding your current program/software?",
+    "What is your production method?",
+    "How many shifts run in your production plant?",
+    "Please indicate the number of machines in your production plant."
+]
+
+# Generate project suggestions based on the answers
+def generate_project_suggestions(*inputs):
+    answers = {i: answer for i, answer in enumerate(inputs)}
+    input_text = " ".join(answers.values())
+    prompt = f"Project Suggestions:\n{input_text}\n---\nAnalze the customer's answers and provide digital transformation project for their firm."
+
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=prompt,
+        max_tokens=2000,
+        n=1,
+        stop=None,
+        temperature=0.7,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0,
+        best_of=1,
+    )
+
+    project_suggestions = [choice['text'].strip() for choice in response.choices]
+    return "\n".join(project_suggestions)
+
+# Create Gradio interface
+inputs = [gr.inputs.Textbox(label=question) for question in questions]
+output = gr.outputs.Textbox(label="Project Suggestions")
+title_html = "<h1><center><img src='https://res.cloudinary.com/crunchbase-production/image/upload/c_lpad,f_auto,q_auto:eco,dpr_1/nbalpqeyzsaspbte713b' alt='Your Firm Image'></center></h1>"
+
+
+iface = gr.Interface(fn=generate_project_suggestions, inputs= inputs , outputs=output,
+                     title= title_html,
+                     description="Answer a few questions to get personalized potential digital transformation projects for your firm" )
+
+
+# Launch the interface
+iface.launch(share=True)
+
